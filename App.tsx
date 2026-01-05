@@ -6,19 +6,17 @@ import CameraScanner from './components/CameraScanner.tsx';
 import GradingResult from './components/GradingResult.tsx';
 import { AnswerKey, Choice, GradedResult } from './types.ts';
 import { scanAnswerSheet } from './services/geminiService.ts';
-import { Camera, ClipboardList, History, Loader2, AlertCircle } from 'lucide-react';
+import { Camera, ClipboardList, History, Loader2, AlertCircle, Sparkles, BookOpen } from 'lucide-react';
 
 const App: React.FC = () => {
-  // State for answer key
   const [answerKey, setAnswerKey] = useState<AnswerKey>(() => {
     const saved = localStorage.getItem('answerKey');
     if (saved) return JSON.parse(saved);
     const initial: AnswerKey = {};
-    for (let i = 1; i <= 20; i++) initial[i] = 'A'; // Default A
+    for (let i = 1; i <= 20; i++) initial[i] = 'A';
     return initial;
   });
 
-  // UI state
   const [isScanning, setIsScanning] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentResult, setCurrentResult] = useState<GradedResult | null>(null);
@@ -28,7 +26,6 @@ const App: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
 
-  // Persistence
   useEffect(() => {
     localStorage.setItem('answerKey', JSON.stringify(answerKey));
   }, [answerKey]);
@@ -48,7 +45,6 @@ const App: React.FC = () => {
     try {
       const scanResult = await scanAnswerSheet(base64);
       
-      // Calculate score
       let correctCount = 0;
       const totalQuestions = 20;
       for (let i = 1; i <= totalQuestions; i++) {
@@ -58,7 +54,6 @@ const App: React.FC = () => {
       }
       
       const score = (correctCount / totalQuestions) * 10;
-      
       const fullResult: GradedResult = {
         ...scanResult,
         score,
@@ -70,40 +65,39 @@ const App: React.FC = () => {
       setCurrentResult(fullResult);
       setHistory(prev => [fullResult, ...prev].slice(0, 50));
     } catch (err: any) {
-      setError(err.message || "Đã xảy ra lỗi khi xử lý hình ảnh.");
+      setError(err.message || "Đã xảy ra lỗi khi AI xử lý hình ảnh.");
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen pb-20 selection:bg-indigo-100">
       <Header />
       
-      <main className="max-w-4xl mx-auto px-4 pt-6">
-        {/* Error Alert */}
+      <main className="max-w-6xl mx-auto px-6 pt-10">
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center space-x-3">
-            <AlertCircle className="w-5 h-5 flex-shrink-0" />
-            <p className="text-sm font-medium">{error}</p>
+          <div className="mb-8 bg-red-50 border border-red-100 text-red-600 p-6 rounded-[2rem] flex items-center space-x-4 animate-in fade-in slide-in-from-top-4">
+            <AlertCircle className="w-6 h-6 flex-shrink-0" />
+            <p className="font-bold">{error}</p>
           </div>
         )}
 
-        {/* Processing State */}
         {isProcessing && (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full"></div>
-              <Loader2 className="w-16 h-16 text-indigo-600 animate-spin relative z-10" />
+          <div className="flex flex-col items-center justify-center py-32 animate-in zoom-in duration-500">
+            <div className="relative mb-8">
+              <div className="absolute inset-0 bg-indigo-500/20 blur-[60px] rounded-full animate-pulse-slow"></div>
+              <div className="relative bg-white p-8 rounded-[3rem] shadow-2xl border border-indigo-50">
+                 <Loader2 className="w-16 h-16 text-indigo-600 animate-spin" />
+              </div>
             </div>
             <div className="text-center">
-               <h3 className="text-xl font-bold text-gray-800">Đang chấm bài...</h3>
-               <p className="text-gray-500 text-sm">AI đang phân tích các ô trả lời trên phiếu</p>
+               <h3 className="text-2xl font-black text-gray-800 mb-2">Đang phân tích bài làm...</h3>
+               <p className="text-gray-400 font-medium">Gemini AI đang đọc từng ô trả lời cho bạn</p>
             </div>
           </div>
         )}
 
-        {/* Success View */}
         {!isProcessing && currentResult && (
           <GradingResult 
             result={currentResult} 
@@ -112,136 +106,132 @@ const App: React.FC = () => {
           />
         )}
 
-        {/* Default View: Input Answer Key & Call to action */}
         {!isProcessing && !currentResult && (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Left Column: Config */}
-            <div className="lg:col-span-3 space-y-8">
-              <section>
-                <div className="flex items-center space-x-2 mb-4">
-                   <ClipboardList className="w-5 h-5 text-indigo-600" />
-                   <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wider">Cấu hình bài thi</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            {/* Config Side */}
+            <div className="lg:col-span-7 space-y-10 animate-in fade-in slide-in-from-left-8 duration-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-200">
+                    <ClipboardList className="w-6 h-6" />
+                  </div>
+                  <h2 className="text-xl font-black text-gray-800 uppercase tracking-tight">Đáp án chuẩn</h2>
                 </div>
-                <AnswerKeyForm answerKey={answerKey} onChange={handleKeyChange} />
-              </section>
+              </div>
+              
+              <AnswerKeyForm answerKey={answerKey} onChange={handleKeyChange} />
 
-              {/* History Section (Desktop) */}
-              <section className="hidden lg:block">
-                 <div className="flex items-center space-x-2 mb-4">
+              <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                <div className="flex items-center space-x-3 mb-6">
                    <History className="w-5 h-5 text-gray-400" />
-                   <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wider">Lịch sử chấm</h2>
+                   <h3 className="font-bold text-gray-800">Lịch sử chấm bài gần đây</h3>
                 </div>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                  {history.length === 0 ? (
-                    <div className="p-8 text-center text-gray-400 italic">Chưa có bài chấm nào</div>
-                  ) : (
-                    <div className="divide-y divide-gray-50 max-h-[300px] overflow-y-auto custom-scrollbar">
-                      {history.map((item) => (
-                        <div key={item.timestamp} className="p-4 hover:bg-gray-50 flex items-center justify-between">
-                          <div>
-                            <p className="font-bold text-gray-800">SBD: {item.sbd || '?'}</p>
-                            <p className="text-xs text-gray-500">{new Date(item.timestamp).toLocaleString('vi-VN')}</p>
-                          </div>
-                          <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-                            item.score >= 5 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                {history.length === 0 ? (
+                  <div className="py-10 text-center">
+                    <BookOpen className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                    <p className="text-gray-400 font-medium italic">Chưa có dữ liệu chấm điểm</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {history.map((item) => (
+                      <div key={item.timestamp} className="p-5 rounded-3xl border border-gray-50 bg-gray-50/50 flex items-center justify-between group hover:bg-white hover:shadow-md transition-all">
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-lg ${
+                            item.score >= 8 ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
                           }`}>
                             {item.score.toFixed(1)}
                           </div>
+                          <div>
+                            <p className="font-black text-gray-800">SBD: {item.sbd || '---'}</p>
+                            <p className="text-xs text-gray-400 font-bold">{new Date(item.timestamp).toLocaleTimeString('vi-VN')} · Đề: {item.maDe || '---'}</p>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </section>
+                        <button className="p-2 text-gray-300 group-hover:text-indigo-600 transition-colors">
+                           <Sparkles className="w-5 h-5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Right Column: CTA & Instructions */}
-            <div className="lg:col-span-2 space-y-6">
-               <div className="bg-indigo-600 rounded-3xl p-8 text-white shadow-2xl shadow-indigo-200 sticky top-24">
-                  <h2 className="text-2xl font-bold mb-4">Sẵn sàng chấm bài?</h2>
-                  <p className="text-indigo-100 text-sm mb-8 leading-relaxed">
-                    Đảm bảo phiếu trả lời nằm trong khung hình, đủ ánh sáng và không bị nhăn để AI đọc chính xác nhất.
-                  </p>
-                  
-                  <button
-                    onClick={() => setIsScanning(true)}
-                    className="w-full bg-white text-indigo-600 py-4 rounded-2xl font-black flex items-center justify-center space-x-3 shadow-xl transform transition-all active:scale-95 hover:shadow-indigo-500/50"
-                  >
-                    <Camera className="w-6 h-6" />
-                    <span>MỞ CAMERA QUÉT BÀI</span>
-                  </button>
+            {/* Action Side */}
+            <div className="lg:col-span-5 animate-in fade-in slide-in-from-right-8 duration-700">
+               <div className="sticky top-28 space-y-6">
+                 <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[3rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000"></div>
+                    
+                    <h2 className="text-3xl font-black mb-6 leading-tight relative z-10">Bắt đầu<br/>chấm điểm ngay</h2>
+                    <p className="text-indigo-100 font-medium mb-10 leading-relaxed relative z-10 opacity-90">
+                      Hãy đặt phiếu trả lời phẳng trên bàn, đủ ánh sáng và nhấn nút phía dưới để kích hoạt AI.
+                    </p>
+                    
+                    <button
+                      onClick={() => setIsScanning(true)}
+                      className="w-full bg-white text-indigo-600 py-5 rounded-[2rem] font-black text-lg flex items-center justify-center space-x-4 shadow-2xl transform transition-all hover:-translate-y-1 active:scale-95 hover:shadow-indigo-400/40 relative z-10"
+                    >
+                      <Camera className="w-7 h-7" />
+                      <span>MỞ CAMERA QUÉT</span>
+                    </button>
 
-                  <div className="mt-10 space-y-4">
-                     <div className="flex items-start space-x-3">
-                        <div className="bg-indigo-500/30 p-1 rounded-md mt-1">
-                          <CheckCircle2Icon className="w-4 h-4" />
-                        </div>
-                        <p className="text-xs text-indigo-100">Tự động nhận diện SBD và Mã đề</p>
-                     </div>
-                     <div className="flex items-start space-x-3">
-                        <div className="bg-indigo-500/30 p-1 rounded-md mt-1">
-                          <CheckCircle2Icon className="w-4 h-4" />
-                        </div>
-                        <p className="text-xs text-indigo-100">Chấm điểm tức thì (20 câu)</p>
-                     </div>
-                     <div className="flex items-start space-x-3">
-                        <div className="bg-indigo-500/30 p-1 rounded-md mt-1">
-                          <CheckCircle2Icon className="w-4 h-4" />
-                        </div>
-                        <p className="text-xs text-indigo-100">Lưu lịch sử offline</p>
-                     </div>
-                  </div>
+                    <div className="mt-12 grid grid-cols-2 gap-4 relative z-10">
+                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10">
+                          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Công nghệ</p>
+                          <p className="font-bold text-sm">Gemini 3 Pro</p>
+                       </div>
+                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10">
+                          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Tốc độ</p>
+                          <p className="font-bold text-sm">~2 giây/bài</p>
+                       </div>
+                    </div>
+                 </div>
+
+                 <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                    <h3 className="font-black text-gray-800 mb-4 flex items-center">
+                      <Sparkles className="w-5 h-5 mr-2 text-amber-400" />
+                      Mẹo chấm điểm
+                    </h3>
+                    <ul className="space-y-4">
+                      {[
+                        "Cầm điện thoại song song với mặt phiếu.",
+                        "Tránh ánh sáng chói trực tiếp vào ô tô.",
+                        "AI có thể nhận diện cả bút chì và bút mực."
+                      ].map((text, i) => (
+                        <li key={i} className="flex items-start space-x-3 text-sm text-gray-500 font-medium leading-relaxed">
+                          <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                          <span>{text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                 </div>
                </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* Floating Action Button (Mobile only) */}
+      {/* Mobile Floating Action Button */}
       {!isProcessing && !currentResult && (
-        <div className="fixed bottom-6 right-6 lg:hidden z-40">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 lg:hidden z-40 w-full px-6">
            <button
              onClick={() => setIsScanning(true)}
-             className="w-16 h-16 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center ring-4 ring-white"
+             className="w-full h-16 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center space-x-3 ring-4 ring-white active:scale-95 transition-all"
            >
-             <Camera className="w-8 h-8" />
+             <Camera className="w-6 h-6" />
+             <span className="font-black">BẮT ĐẦU QUÉT BÀI</span>
            </button>
         </div>
       )}
 
-      {/* Camera Overlay */}
       {isScanning && (
         <CameraScanner 
           onCapture={processScan} 
           onClose={() => setIsScanning(false)} 
         />
       )}
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #d1d5db;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #9ca3af;
-        }
-      `}</style>
     </div>
   );
 };
-
-// Helper tiny icons
-const CheckCircle2Icon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
 
 export default App;
