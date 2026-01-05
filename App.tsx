@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import AnswerKeyForm from './components/AnswerKeyForm';
-import CameraScanner from './components/CameraScanner';
-import GradingResult from './components/GradingResult';
-import { AnswerKey, Choice, GradedResult } from './types';
-import { scanAnswerSheet } from './services/geminiService';
+import Header from './components/Header.tsx';
+import AnswerKeyForm from './components/AnswerKeyForm.tsx';
+import CameraScanner from './components/CameraScanner.tsx';
+import GradingResult from './components/GradingResult.tsx';
+import { AnswerKey, Choice, GradedResult } from './types.ts';
+import { scanAnswerSheet } from './services/geminiService.ts';
 import { Camera, ClipboardList, History, Loader2, AlertCircle } from 'lucide-react';
 
 const App: React.FC = () => {

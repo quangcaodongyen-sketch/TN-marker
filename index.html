@@ -7,6 +7,10 @@
     <title>Gemini Grader - Chấm Trắc Nghiệm AI</title>
     <meta name="description" content="Ứng dụng chấm điểm trắc nghiệm tự động bằng camera sử dụng AI Gemini 3." />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Khởi tạo shim cho process để tránh lỗi ReferenceError trên trình duyệt
+      window.process = window.process || { env: {} };
+    </script>
     <script type="importmap">
 {
   "imports": {
