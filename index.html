@@ -10,7 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      window.process = { env: { NODE_ENV: 'production', API_KEY: "" } };
+      // Khởi tạo process.env TRƯỚC khi nạp bất kỳ module nào
+      window.process = { 
+        env: { 
+          NODE_ENV: 'production',
+          API_KEY: "" // Sẽ được hệ thống tự động inject
+        } 
+      };
+      
       tailwind.config = {
         theme: {
           extend: {
@@ -49,6 +56,12 @@
       .custom-scrollbar::-webkit-scrollbar { width: 5px; }
       .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+      
+      @keyframes scan {
+        0% { top: 0; }
+        50% { top: 100%; }
+        100% { top: 0; }
+      }
     </style>
   </head>
   <body class="antialiased selection:bg-indigo-100 selection:text-indigo-900">
