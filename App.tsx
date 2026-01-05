@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header.tsx';
 import AnswerKeyForm from './components/AnswerKeyForm.tsx';
 import CameraScanner from './components/CameraScanner.tsx';
@@ -66,10 +66,18 @@ const App: React.FC = () => {
       setHistory(prev => [fullResult, ...prev].slice(0, 50));
     } catch (err: any) {
       setError(err.message || "Đã xảy ra lỗi khi AI xử lý hình ảnh.");
+      setIsScanning(false); // Đảm bảo không kẹt ở màn hình scanner
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const handleReset = useCallback((autoRestart: boolean = false) => {
+    setCurrentResult(null);
+    if (autoRestart) {
+      setIsScanning(true);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen pb-20 selection:bg-indigo-100">
@@ -77,9 +85,17 @@ const App: React.FC = () => {
       
       <main className="max-w-6xl mx-auto px-6 pt-10">
         {error && (
-          <div className="mb-8 bg-red-50 border border-red-100 text-red-600 p-6 rounded-[2rem] flex items-center space-x-4 animate-in fade-in slide-in-from-top-4">
-            <AlertCircle className="w-6 h-6 flex-shrink-0" />
-            <p className="font-bold">{error}</p>
+          <div className="mb-8 bg-red-50 border border-red-100 text-red-600 p-6 rounded-[2rem] flex items-center justify-between animate-in fade-in slide-in-from-top-4">
+            <div className="flex items-center space-x-4">
+              <AlertCircle className="w-6 h-6 flex-shrink-0" />
+              <p className="font-bold">{error}</p>
+            </div>
+            <button 
+              onClick={() => { setError(null); setIsScanning(true); }}
+              className="bg-red-600 text-white px-6 py-2 rounded-full font-bold text-sm"
+            >
+              Thử lại ngay
+            </button>
           </div>
         )}
 
@@ -92,8 +108,8 @@ const App: React.FC = () => {
               </div>
             </div>
             <div className="text-center">
-               <h3 className="text-2xl font-black text-gray-800 mb-2">Đang phân tích bài làm...</h3>
-               <p className="text-gray-400 font-medium">Gemini AI đang đọc từng ô trả lời cho bạn</p>
+               <h3 className="text-3xl font-black text-gray-800 mb-2">ĐANG PHÂN TÍCH...</h3>
+               <p className="text-gray-400 font-bold tracking-widest uppercase text-xs">AI Gemini đang đọc dữ liệu phiếu</p>
             </div>
           </div>
         )}
@@ -102,7 +118,7 @@ const App: React.FC = () => {
           <GradingResult 
             result={currentResult} 
             answerKey={answerKey} 
-            onReset={() => setCurrentResult(null)} 
+            onReset={handleReset} 
           />
         )}
 
@@ -124,7 +140,7 @@ const App: React.FC = () => {
               <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
                 <div className="flex items-center space-x-3 mb-6">
                    <History className="w-5 h-5 text-gray-400" />
-                   <h3 className="font-bold text-gray-800">Lịch sử chấm bài gần đây</h3>
+                   <h3 className="font-bold text-gray-800">Lịch sử chấm gần đây</h3>
                 </div>
                 {history.length === 0 ? (
                   <div className="py-10 text-center">
@@ -146,9 +162,7 @@ const App: React.FC = () => {
                             <p className="text-xs text-gray-400 font-bold">{new Date(item.timestamp).toLocaleTimeString('vi-VN')} · Đề: {item.maDe || '---'}</p>
                           </div>
                         </div>
-                        <button className="p-2 text-gray-300 group-hover:text-indigo-600 transition-colors">
-                           <Sparkles className="w-5 h-5" />
-                        </button>
+                        <Sparkles className="w-5 h-5 text-gray-200 group-hover:text-indigo-600" />
                       </div>
                     ))}
                   </div>
@@ -160,43 +174,32 @@ const App: React.FC = () => {
             <div className="lg:col-span-5 animate-in fade-in slide-in-from-right-8 duration-700">
                <div className="sticky top-28 space-y-6">
                  <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-[3rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-64 h-64 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-1000"></div>
+                    <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
                     
-                    <h2 className="text-3xl font-black mb-6 leading-tight relative z-10">Bắt đầu<br/>chấm điểm ngay</h2>
+                    <h2 className="text-3xl font-black mb-6 leading-tight relative z-10">Máy Chấm Bài<br/>Thông Minh AI</h2>
                     <p className="text-indigo-100 font-medium mb-10 leading-relaxed relative z-10 opacity-90">
-                      Hãy đặt phiếu trả lời phẳng trên bàn, đủ ánh sáng và nhấn nút phía dưới để kích hoạt AI.
+                      Hệ thống tự động nhận diện và chấm điểm liên tục. Chỉ cần đưa bài vào camera.
                     </p>
                     
                     <button
                       onClick={() => setIsScanning(true)}
-                      className="w-full bg-white text-indigo-600 py-5 rounded-[2rem] font-black text-lg flex items-center justify-center space-x-4 shadow-2xl transform transition-all hover:-translate-y-1 active:scale-95 hover:shadow-indigo-400/40 relative z-10"
+                      className="w-full bg-white text-indigo-600 py-5 rounded-[2rem] font-black text-lg flex items-center justify-center space-x-4 shadow-2xl transform transition-all hover:-translate-y-1 active:scale-95 relative z-10"
                     >
                       <Camera className="w-7 h-7" />
-                      <span>MỞ CAMERA QUÉT</span>
+                      <span>BẮT ĐẦU CHẤM LIÊN TỤC</span>
                     </button>
-
-                    <div className="mt-12 grid grid-cols-2 gap-4 relative z-10">
-                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Công nghệ</p>
-                          <p className="font-bold text-sm">Gemini 3 Pro</p>
-                       </div>
-                       <div className="bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/10">
-                          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 mb-1">Tốc độ</p>
-                          <p className="font-bold text-sm">~2 giây/bài</p>
-                       </div>
-                    </div>
                  </div>
 
                  <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
-                    <h3 className="font-black text-gray-800 mb-4 flex items-center">
-                      <Sparkles className="w-5 h-5 mr-2 text-amber-400" />
-                      Mẹo chấm điểm
+                    <h3 className="font-black text-gray-800 mb-4 flex items-center uppercase text-sm tracking-widest">
+                      <Sparkles className="w-4 h-4 mr-2 text-amber-400" />
+                      Hướng dẫn
                     </h3>
-                    <ul className="space-y-4">
+                    <ul className="space-y-3">
                       {[
-                        "Cầm điện thoại song song với mặt phiếu.",
-                        "Tránh ánh sáng chói trực tiếp vào ô tô.",
-                        "AI có thể nhận diện cả bút chì và bút mực."
+                        "Cầm điện thoại song song với phiếu.",
+                        "Kết quả sẽ tự động hiện và chuyển sau 2s.",
+                        "Hỗ trợ cả bút chì tô mờ."
                       ].map((text, i) => (
                         <li key={i} className="flex items-start space-x-3 text-sm text-gray-500 font-medium leading-relaxed">
                           <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
@@ -211,7 +214,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Mobile Floating Action Button */}
+      {/* Mobile FAB */}
       {!isProcessing && !currentResult && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 lg:hidden z-40 w-full px-6">
            <button
