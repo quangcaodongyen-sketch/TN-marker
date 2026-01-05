@@ -1,0 +1,7 @@
+{
+  "name": "Gemini Grader - Chấm Trắc Nghiệm Thông Minh",
+  "description": "Ứng dụng chấm bài trắc nghiệm tự động sử dụng camera và AI Gemini. Nhập đáp án, quét phiếu trả lời và nhận kết quả ngay lập tức.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
