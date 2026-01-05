@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GradedResult, AnswerKey } from '../types';
+import { GradedResult, AnswerKey } from '../types.ts';
 import { CheckCircle2, XCircle, Info, Hash, User } from 'lucide-react';
 
 interface GradingResultProps {

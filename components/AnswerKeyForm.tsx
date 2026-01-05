@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { AnswerKey, Choice } from '../types';
+import { AnswerKey, Choice } from '../types.ts';
 
 interface AnswerKeyFormProps {
   answerKey: AnswerKey;
