@@ -2,9 +2,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { ScanResult } from "../types.ts";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const scanAnswerSheet = async (base64Image: string): Promise<ScanResult> => {
+  // Khởi tạo instance ngay trước khi gọi để đảm bảo lấy đúng API_KEY từ môi trường
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const model = 'gemini-3-flash-preview';
 
   const systemInstruction = `
